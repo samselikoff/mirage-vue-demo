@@ -7,7 +7,7 @@
       Loading...
     </div>
     <div v-else>
-      <div v-for="user in users">
+      <div v-for="user in users" :key="user.id">
         {{ user.attributes.name }}
       </div>
     </div>
@@ -18,7 +18,7 @@
 import axios from 'axios';
 import Server, { Model, Factory, JSONAPISerializer } from '@miragejs/server';
 
-let server = new Server({
+new Server({
   models: {
     user: Model
   },
