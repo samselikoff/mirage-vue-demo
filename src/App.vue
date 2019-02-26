@@ -1,17 +1,65 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>Hello, Mirage!</h1>
+    <p>Here are the users:</p>
+
+    <div v-if="isLoading">
+      Loading...
+    </div>
+    <div v-else>
+      <div v-for="user in users">
+        {{ user.attributes.name }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from 'axios';
+import Server, { Model, Factory, JSONAPISerializer } from '@miragejs/server';
+
+let server = new Server({
+  models: {
+    user: Model
+  },
+  factories: {
+    user: Factory.extend({
+      name(i) {
+        return `User ${i}`;
+      }
+    })
+  },
+  serializers: {
+    application: JSONAPISerializer
+  },
+  scenarios: {
+    default(server) {
+      server.createList('user', 10);
+    }
+  },
+  baseConfig() {
+    this.namespace = 'api';
+    this.timing = 600;
+
+    this.get('/users');
+
+    this.passthrough('http://localhost:8080/**');
+  }
+});
 
 export default {
   name: 'app',
-  components: {
-    HelloWorld
+  data () {
+    return {
+      users: null,
+      isLoading: true
+    }
+  },
+  mounted () {
+    axios.get('/api/users').then(response => {
+      this.users = response.data.data;
+      this.isLoading = false;
+    });
   }
 }
 </script>
